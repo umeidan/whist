@@ -1,0 +1,1341 @@
+<!-- please read and understand the rules of the game before reading the code. Understanding the code without understanding the rules of the game will be much harder -->
+
+<html>
+
+<head>
+<title>Our Whist</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+</head>
+
+<body>
+<style>
+	
+	body {
+		background:green;		
+	}
+	.Acard {
+		position:absolute;
+		width:73px;		
+		height:98px;						
+		bottom:0px;
+		float:left;	
+		background-color:white;		
+		transition-property: bottom,left;
+		transition-duration: 1s, 1s;		
+	}
+	.rules {
+		position:absolute;
+		top:0px;		
+		height:10px;
+		width:80px;		
+		font-size:0.8em;
+		padding: .5em .5em 1em .5em ;
+		text-align:center;
+	}	
+	.lastTrickButton {
+		position:absolute;
+		top:50px;		
+		height:10px;
+		width:80px;		
+		font-size:0.8em;
+		padding: .5em .5em 1em .5em ;
+		text-align:center;
+	}
+	.lastTrick {
+		position:absolute;		
+		width:325px;		
+		height:105px;				
+		top:80px;		
+		background-color:white;
+		border:3px groove gray;		
+		z-index:40;
+	}
+	.lastTrickCell{				
+		float:left;		
+		height:98px;
+		width:73px;
+		background-color:white;		
+		color:black;
+		border:solid 1px black;
+		margins:0px 5px;
+		text-align:center;
+	}
+	.centralTop {
+		position:relative;
+		margin:0px auto;
+		/border:1px solid black;
+		width:500px;
+		height:150px;
+		display-inline:block;
+	}	
+	.tricks {
+		position:relative;
+		height:20px;
+		width:20px;				
+		text-align:center;
+	}
+	
+	.topName {
+		margin:5px 5px 5px 200px;
+		float:left;		
+	}	
+	.topTricks{
+		float:left;		
+	}
+	.topCards {
+		position:relative;
+		width:465px;
+		height:100px;
+		margin:5px auto;						
+	}	
+	.topPlayerCard {
+		position:absolute;
+		width:73px;		
+		height:98px;						
+		float:left;
+		bottom:0px;		
+		background-color:white;				
+	}
+	#leftName {
+		margin:250px 5px 200px 5px;	
+		float:left;			
+		text-align:right;
+	}
+	.leftTricks{	
+		float:left;	
+		margin:250px 5px 250px 5px;
+	}
+	#rightName {
+		margin:250px 5px 200px 5px;	
+		float:left;		
+		text-align:left;	
+	}		
+	.rightTricks{		
+		float:left;
+		margin:250px 5px 250px 5px;
+	}
+	.sidePlayer {	
+		position:relative;
+		width:100px;
+		height:465px;
+		float:left;
+		margin:5px 10px;
+		/border:1px solid black;
+	}	
+	.leftPlayerCard {
+		position:absolute;
+		width:98px;		
+		height:73px;										
+		background-color:white;		
+		left:0px;		
+	}
+	.rightPlayerCard {
+		position:absolute;
+		width:98px;		
+		height:73px;												
+		background-color:white;		
+		left:0px;		
+	}
+	.myTricks{
+		margin: 5px 0px 0px 5px;
+		float:left;
+	}		
+	.bottomName{
+		float:left;
+		margin: 5px 0 0 420px;
+	}
+	.myCards{
+		position:relative;
+		/border:solid 1px black;
+		width:500px;
+		height:100px;
+		margin:5px auto 0px auto;				
+	}	
+	.transitions {
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg); /* Safari and Chrome */
+		transition-timing-function: linear;
+		-webkit-transition-timing-function: linear; /* Safari and Chrome */
+		transition: transform 1s, bottom, 1s,left 1s;
+		-webkit-transition: -webkit-transform 1s,bottom 1s,left 1s; /* Safari */		
+	}	
+	.name {
+		position:relative;		
+		/border:black solid 1px;
+		height:20px;
+		width:80px;				
+		color:black;
+		text-align:center;
+		font-size:120%;
+		font-family:ariel,sans-serif;
+		
+	}	
+	.tableScoreButton {
+		position:absolute;
+		top:20px;
+		right:20px;
+		height:10px;
+		width:60px;
+		padding: .5em .5em 1.2em .5em ;
+		font-size:1.2em;
+	}	
+	.niceButton {		
+		text-decoration: none;
+		font:'Droid Sans', sans-serif;
+		font-weight: bold;
+		text-shadow: rgba(255,255,255,.5) 0 1px 0;
+		text-align:center;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		user-select: none;				
+		display: inline-block;		
+		-webkit-border-radius: 8px;
+		-moz-border-radius: 8px;
+		border-radius: 8px;
+		border-top: 1px solid rgba(255,255,255,0.8);
+		border-bottom: 1px solid rgba(0,0,0,0.1);
+		background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0.7) ));
+		background-image: -moz-radial-gradient(top, ellipse cover, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
+		background-image: gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0.7) ));
+		-webkit-transition: background .2s ease-in-out;
+		-moz-transition: background .2s ease-in-out;
+		transition: background .2s ease-in-out;
+		color: hsl(0, 0%, 40%) !important;
+		background-color: hsl(0, 0%, 75%);
+		-webkit-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		-moz-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+	}	
+	.nextRound {
+		position:absolute;
+		width:200px;
+		height:100px;				
+		padding:20px 0px; 
+		top:200px;
+		left:100px;
+		font-size:30px;
+		text-align:center;
+		/background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0) ));
+		/-webkit-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		z-Index:50;
+	}		
+	.secondDec {
+		position:absolute;		
+		left:45px;
+		top:0px;
+		height:250px;
+		width:250px;
+		padding:15px;				
+		font-size:1.5em;
+		z-Index:55;
+	}
+	.allPassed {
+		height:100px;
+		color:red;
+	}
+	#secondDeclaration {		
+		height:300px;
+		width:150px;
+		margin-left:auto;
+		margin-right:auto;
+		margin-top:40px;		
+	}	
+	#secondDeclaration button {
+		height:30px;
+		width:30px;		
+	}						
+	.outerBiddingBoard {
+		position:absolute;		
+		left:-120px;
+		top:20px;				
+		width:650px;
+		height:350px;
+		padding:20px 0px;		
+		text-align:center;
+		font-size:1.5em;		
+		background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(0,0,0,1) ), to( rgba(0,0,0,0.7)));		
+		border-radius:15px;		
+		border:5px groove rgb(194,194,194);
+		z-Index:35;
+	}		
+	#outerBiddingBoard button {		
+		width:60px;
+		height:40px;
+		margin:7px;	
+	}	
+	#waitingForBid {
+		height:120px;
+		width:300px;
+		left:70px;
+		top:100px;
+	}
+	.playerBids {
+		position:absolute;
+		top:-100px;
+		left:0px;
+		width:400px;
+		height:50px;	
+		padding:10px;
+		background-color:white;
+		border:3px groove rgb(120,120,120);
+		border-radius:15px;		
+		z-Index:35;		
+	}	
+	#bidsHeader {
+		margin-bottom:10px;
+		text-decoration:underline;
+	}
+	.bidsLine {
+		width:380px;
+		height:20px;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	.bidsCell{				
+		float:left;
+		width:90px;
+		height:20px;
+		text-align:center;		
+	}
+	#mainRight {
+		position:absolute;
+		top:65px;
+		right:20px;
+		width:560px;
+		height:540px;
+		padding:10px 0px;
+		background-color:white;
+		opacity:0.9;		
+		border:solid red 3px;	
+		box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		z-Index:45;
+	}
+	#scoreTable {		
+		top:45px;
+		right:30px;
+		width:560px;
+		height:540px;
+		padding:5px;			
+		margin-left:5px;
+	}
+	#tableheader {
+		top:70px;
+		right:30px;
+		padding:5px;	
+		margin-left:5px;
+	}
+	
+	.scoreTableLine {
+		width:560px;	
+		height:25px;
+		margin-right:auto;
+		margin-left:auto;
+	}
+	.scoreTableCell {
+		width:98px;
+		text-align:center;
+		float:left;		
+	}
+	.roundCell{
+		width:70px;			
+		float:left;		
+		text-align:center;				
+	}
+	.trumpCell{
+		width:65px;
+		float:left;						
+		text-align:center;				
+		margin-right:1px;		
+	}
+	.scoreTableMiniCell {
+		width:30px;
+		float:left;
+		border:solid 1px;	
+		text-align:center;		
+	}
+	.blackBack {
+		background-color:black;
+	}
+	.redText {
+		color:red;
+	}
+	
+	.nonDisplay {
+		display:none;
+	}	
+	.display {
+		display:block;
+	}
+	.startPanel{
+		position:absolute;
+		left:300px;
+		top:300px;
+		height:250px;
+		width:450px;		
+		text-align:center;
+		padding: 20px 20px;
+	}
+	.newGameButton {
+		position:relative;		
+		height:40px;
+		width:120px;
+		margin:10px;	
+		float:left;
+		padding:40px 2px;
+		font-size:20px;
+	}
+	.startPanel input {
+		position:relative;		
+		height:20px;
+		width:100px;
+		background-color:white;
+		border:1px black solid;
+		//padding: 20px 20px;
+		margin-top:10px;
+	}
+	.join {
+		margin:5px auto;
+		width:30px;
+		height:15px;	
+		font-size:15px;
+		font-weight:normal;
+		padding:0.2em 0.2em;
+		background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0) ));
+		-webkit-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		color:white;
+	}
+	.myName {
+		position:relative;		
+		height:40px;
+		width:150px;
+		float:left;
+		background-color:gray;		
+		//border:1px black solid;
+		padding: 10px 10px;
+		margin:10px;
+	}
+	.nameInput {
+		position:relative;		
+		height:60px;
+		width:400px;
+		float:left;
+		font-size:2em;
+		background-color:gray;		
+		//border:1px black solid;
+		padding: 10px 10px;
+		margin:10px;
+	}
+	.chat{
+		position:absolute;
+		bottom:25px;
+		right:5px;
+		height:300px;
+		width:250px;				
+	}
+	.chatBody {
+		background-color:white;
+	}
+	.chatBar {
+		position:relative;		
+		height:22px;
+		width:230px;		
+		background-color:rgb(64,64,64);
+		color:white;
+		font-size:16px;
+		font-weight:normal;				
+		font-family:ariel,sans-serif;
+		padding:8px 10px;
+	}	
+	.chatWindow{
+		position:relative;		
+		height:230px;
+		width:230px;			
+		background-color:white;
+		font-size:16px;
+		font-weight:normal;				
+		font-family:ariel,sans-serif;
+		padding:8px 10px;
+		overflow-y:scroll;
+		overflow-style-y:scrollbar;
+	}	
+	.myChatText{
+		position:relative;		
+		height:40px;
+		width:230px;
+		background-color:white;
+		margin:5px 5px;
+	}
+	.nameChat{
+		font-weight:bold;
+	}
+	.yellowColor {
+		color:yellow;
+	}	
+
+	
+</style>
+<div id="all" style="width:1000px;height:760px">	
+	<div id="main" style="width:1000px;height:800px;float:left">		
+		<div id="top" style="position:relative;width:930px;height:150px">			
+			<a id="rulesButton" class="rules niceButton" href="http://whist.nodejitsu.com/rules.html" target="_blank"> Rules </a>			
+			<div id="lastTrickButton" class="lastTrickButton niceButton nonDisplay">
+				Last Trick
+			</div>
+			<div id="lastTrick" class="lastTrick nonDisplay">				
+				<div class="lastTrickCell" style="background:url('http://i.imgur.com/qNCb3Sw.jpg') {{leftSprite}}px {{topSprite}}px"> </div> 
+			</div>
+				<div id="centralTop" class="centralTop">
+					<div style="display:inline-block;width:100%">
+						<div id="topName" class="topName name" style=""></div>
+						<div id="TTricks" class="topTricks tricks niceButton nonDisplay">0</div>
+					</div>
+				<div id="topCards" class="topCards" style="">
+					<div  id="{{elementId}}" class="topPlayerCard transitions" style="background:url('http://i.imgur.com/qNCb3Sw.jpg') -512px -392px;left:{{leftPos}}px;z-index:{{zIndex}}"></div>	
+				</div>
+			</div>
+		</div>		
+		<div id="midCards" style="width:940px;height:470px">			
+			<div id="left" style="position:relative;width:250px;height:470px;float:left">				
+				<div id="leftName" class="name"></div>
+				<div id="LTricks" class="leftTricks tricks niceButton nonDisplay">0</div>
+				<div id="leftPlayer" class="sidePlayer">
+					<div id="{{elementId}}" class="leftPlayerCard transitions" style="background:url('http://i.imgur.com/qNCb3Sw.jpg') -393px -392px;bottom:{{bottomPos}}px;z-index:{{zIndex}}"></div>				
+				</div>				
+			</div>
+			<div id="MidH" style="position:relative;width:430px;height:470px;float:left">			
+				<div id="outerBiddingBoard" class="outerBiddingBoard nonDisplay">
+					<div id="biddingBoard" class="innerBiddingBoard" >	
+						<button type="button" id="button"+{{number}}+{{suit}} class="niceButton" declareButton="{{cardIndex}}">{{number}} {{suit}} </button>		
+					</div>
+					<button type="button" id="button pass" class="niceButton" declareButton="pass">pass</button>		
+				</div>
+				<div id="waitingForBid" class="outerBiddingBoard nonDisplay">	
+					<div style="color:white"> waiting for {{player}} to declare a bid... </div>
+				</div>
+				<div id="playerBids" class="playerBids nonDisplay">
+					 <div id="bidsHeader" class="bidsLine">		
+						<div id="player0bid" class="bidsCell">Player 1</div>
+						<div id="player1bid" class="bidsCell">Player 2</div>
+						<div id="player2bid" class="bidsCell">Player 3</div>
+						<div id="player3bid" class="bidsCell">Player 4</div>		
+					 </div>
+					 <div id="bidsTable" class="bidsLine">		
+						<div class="bidsCell redText">{{p0bidNumber}} {{p0bidSuit}}</div>	
+						<div class="bidsCell redText">{{p1bidNumber}} {{p1bidSuit}}</div>	
+						<div class="bidsCell redText">{{p2bidNumber}} {{p2bidSuit}}</div>	
+						<div class="bidsCell redText">{{p3bidNumber}} {{p3bidSuit}}</div>	
+					 </div>
+				</div>
+				<div id="nextRound" class="nextRound niceButton nonDisplay">
+					Next Round?
+				</div>
+				<div id="nextRoundWaiting" class="nextRound niceButton nonDisplay">
+					Waiting for others to be ready...
+				</div>
+				<div id="secondDec" class=" secondDec niceButton nonDisplay">
+					How many tricks do you think you'll get?
+					<div id="secondDeclaration">		
+							<button type="button" id="{{number}}" secondDeclareButton="{{number}}">{{number}}</button>
+					</div>		
+				</div>
+				<div id="waitingForDec" style="height:100px;" class="secondDec niceButton nonDisplay">
+					Waiting for {{player}} to declare tricks...
+				</div>
+				<div id="allPassed" class="allPassed secondDec niceButton nonDisplay">
+					Everyone passed. Dealing again.
+				</div>
+			</div>			
+			<div id="right" style="position:relative;width:250px;height:470px;float:left">								
+				<div id="rightPlayer" class="sidePlayer">
+					<div id="{{elementId}}" class="rightPlayerCard transitions" style="background:url('http://i.imgur.com/qNCb3Sw.jpg') -393px -392px;bottom:{{bottomPos}}px;z-index:{{zIndex}}"></div>				
+				</div>	
+				<div id="RTricks" class="rightTricks tricks niceButton nonDisplay">0</div>
+				<div id="rightName" class="name"></div>
+			</div>
+		</div>
+		
+		<div id="bottomCards" style="width:930px;height:140px">			
+			<div id="cards" class="myCards" style="">
+				<div class="Acard" id="{{elementId}}" data-cardCode="{{cardCode}}" style="background:url('http://i.imgur.com/qNCb3Sw.jpg') {{leftSprite}}px {{topSprite}}px;left:{{leftPos}}px;z-index:{{zIndex}}"></div>	
+			</div>	
+			<div style="display:inline-block;width:100%">
+				<div id="bottomName" class="bottomName name" style=""></div>
+				<div id="myTricks" class="myTricks tricks niceButton nonDisplay">0</div>
+			</div>
+		</div>
+
+		
+	</div>
+</div>
+<div id="tableScoreButton" class="niceButton tableScoreButton nonDisplay"> 
+	scores
+</div>
+<div id="mainRight" class="niceButton nonDisplay" style="">		
+			<div id="tableheader" class="scoreTableLine">
+				<div class="roundCell">Round</div>
+				<div id="player0score" class="scoreTableCell">Player 0</div>
+				<div id="player1score" class="scoreTableCell">Player 1</div>
+				<div id="player2score" class="scoreTableCell">Player 2</div>
+				<div id="player3score" class="scoreTableCell">Player 3</div>
+				<div class="trumpCell">Trump</div>
+			</div>
+			<div id="scoreTable" >
+				<div class="scoreTableLine">	
+					<div  class="roundCell">{{hand}}</div>				
+					<div  class="scoreTableCell">
+						<div class="scoreTableMiniCell">{{bet0}}</div>
+						<div class="scoreTableMiniCell">{{tricks0}}</div>
+						<div class="scoreTableMiniCell">{{score0}}</div>
+					</div>
+					<div  class="scoreTableCell">
+						<div class="scoreTableMiniCell">{{bet1}}</div>
+						<div class="scoreTableMiniCell">{{tricks1}}</div>
+						<div class="scoreTableMiniCell">{{score1}}</div>
+					</div>
+					<div  class="scoreTableCell">
+						<div class="scoreTableMiniCell">{{bet2}}</div>
+						<div class="scoreTableMiniCell">{{tricks2}}</div>
+						<div class="scoreTableMiniCell">{{score2}}</div>
+					</div>
+					<div  class="scoreTableCell">
+						<div class="scoreTableMiniCell">{{bet3}}</div>
+						<div class="scoreTableMiniCell">{{tricks3}}</div>
+						<div class="scoreTableMiniCell">{{score3}}</div>
+					</div>
+					<div class="trumpCell">{{trump}}</div>				
+				</div>
+			</div>
+		
+</div>
+
+<div id="chat" class="chat nonDisplay">	
+	<div id="chatBar" class="chatBar">Chat</div>
+	<div id="chatBody" class="chatBody">
+		<div id="chatWindow" class="chatWindow">
+			<div id="chatLine" class="chatLine">
+				<span class="nameChat">{{player}}: </span><span id="text" class="textChat"> {{text}}</span> 
+			</div>		
+		</div>
+		<textarea id="myChatText" class="myChatText"></textarea>
+	</div>
+</div>
+<div id="startPanel" class="startPanel niceButton">	
+	<textarea id="nameInput" class="nameInput">Insert your name here</textarea>
+	<div id="JoinPublicGame" class="newGameButton niceButton" startButton="public">Join Public Game</div>
+	<div id="startPrivateGame" class="newGameButton niceButton" startButton="startPrivate">Start Private Game</div>
+	<div id="JoinPrivateGame" class="newGameButton niceButton" style="height:90px;padding:15px 2px;font-size:18px" >Join Private Game
+		<input id="gameCode"/>
+		<div id="join" class="join" startButton="joinPrivate">Join</div>
+	</div>	
+</div>
+<div id="startPanelWaiting" style="font-size:34px; height:120px" class="startPanel niceButton nonDisplay">	
+	waiting for other players to join the game	
+	<div id="yourGameIs" class="yourGameIs" style="height:40px"></div>	
+</div>
+
+</body>
+
+<script>
+var nameInputCheck  = ""		//checks if a player put his name where he supposed to before trying to join a game
+var hand = 0;					//the hand in the game
+var cardsObject = [];			//an object that contains all the cards in the deck
+var scoreTable = [];			//bet = "declaration", tricks = "tricks claimed", "points" = points, and there are 12 keys in each row of the array so fro example: tricks3 is the tricks of player 3
+var bidsTable = [];				//holds the data on the bids of the players in a certain hand
+var biddingRound = 0;			//for the bidsTable
+var myPlayer = 0;				//what is my player number? will get this from the server on 'welcome'
+var players = {};				//an objects that contains details on the players (name, photo etc..)
+var topCards=[];				//represnting the top player's cards
+var leftCards=[];				//represnting the left player's cards
+var rightCards=[];				//represnting the right player's cards
+var others={};					//representing all the other players' cards, each of the three card arrays will become members in this object with each key equal to the player's number;
+var waitingForBid = [{"player":0}];		//saves the data on who's turn is it to bid now, used to notify the players who's turn is it to bid right now
+var waitingForDec = [{"player":0}];		//saves the data on who's turn is it to declare now, used to notify the players who's turn is it to bid right now
+var cardsOfRound = [];			//saves the cards (divs) that were thrown on a specific round
+var cardsOfRoundObj = [];		//saves the cards (objects) that were thrown on a specific round - this is for the lastTrick button
+var thrownCards = [];			//all the cards that were thrown on a specific hand
+var myName = "";				//the client's name
+
+function get (elementId) {
+	element = document.getElementById(''+elementId)
+	return element
+}
+
+function showElement (element) {
+	var element = get(element);
+	$(element).addClass("display").removeClass("nonDisplay");
+}
+
+function hideElement (element) {
+	var element = get(element);
+	$(element).removeClass("display").addClass("nonDisplay");
+}
+
+function getEmptyScoreTableLine() {				//creates an empty line in the scoreTable array (the hand will be changed, it won't remain 1)
+	return ({
+		hand:1
+		,bet0:'-'
+		,tricks0:'-'
+		,score0:'-'
+		,bet1:'-'
+		,tricks1:'-'
+		,score1:'-'
+		,bet2:'-'
+		,tricks2:'-'
+		,score2:'-'
+		,bet3:'-'
+		,tricks3:'-'
+		,score3:'-'
+		,trump:'-'
+	})
+}
+function getEmptyBidsTableLine() {				//creates an empty line in the bidsTable array 
+	return ({
+		p0bidNumber:'-',
+		p0bidSuit:'',
+		p1bidNumber:'-',
+		p1bidSuit:'',
+		p2bidNumber:'-',
+		p2bidSuit:'',
+		p3bidNumber:'-',
+		p3bidSuit:''
+	})
+}
+bidsTable[0] = getEmptyBidsTableLine();
+scoreTable[0] = getEmptyScoreTableLine();
+
+var gameStatus = "bidding"
+var suits = ["C","D","H","S"];		//short version for the bidding 
+var socket = io.connect();
+var elements = [
+	'cards',
+	'lastTrick',
+	'topCards',
+	'leftPlayer',
+	'rightPlayer',
+	'scoreTable',
+	'biddingBoard',
+	'waitingForBid',
+	'waitingForDec',
+	'bidsTable',
+	'secondDeclaration',
+	'chatLine'	
+]
+
+
+function dataTemplates(array) {			//saves the innerHTML of an element in an attribute and the clears it. The innerHTML template is later used to rewrite the element	
+	for(var i=0;i<array.length;i++) {		
+		get(array[i]).setAttribute('data-myTemplate',get(array[i]).innerHTML);
+		get(array[i]).innerHTML='';
+	}
+}
+
+dataTemplates(elements);
+writeTable(scoreTable,'scoreTable');
+
+function _MustachString(str, TemplateVals) {				//replaces a string with the value of an object member that has the same name like the string
+    for (var key in TemplateVals) {
+        var re = new RegExp("{{" + key.toString() + "}}", "g")
+        if (TemplateVals[key] != undefined ) {			
+            var TmpVal = TemplateVals[key].toString();
+            TmpVal = TmpVal.replace('"', "&quot;")
+            TmpVal = TmpVal.replace('<', "&lt;")
+            str = str.replace(re, TmpVal)
+        }
+    }
+    return str
+}
+
+function writePlayerNames (myPlayer) {								//for each player - matchs the other players' names to their right location in the table
+	get("leftName").innerHTML = players.names[(myPlayer+1)%4];
+	get("topName").innerHTML = players.names[(myPlayer+2)%4];
+	get("rightName").innerHTML = players.names[(myPlayer+3)%4];
+	get("bottomName").innerHTML = myName;
+	
+	for (var i=0;i<4;i++) {
+		get('player'+i+"bid").innerHTML = players.names[i];
+		get('player'+i+"score").innerHTML = players.names[i];
+	}
+};
+
+function writeCards (cardArray, div) {				//draws a player's card array in a div
+		
+	cardArray.sort(function(a,b){					//first sort by suit, then by number
+		if (a.suit != b.suit){
+			return (a.suit.charAt(a.suit.length-1) > b.suit.charAt(b.suit.length-1) ? -1 : 1);			//luckily the order in which I want to arrange the suits corresponds to the last char in the name of the suit
+		}
+		return parseInt(a.number) - parseInt(b.number);
+	})		
+	var papaWidth=get('cards').offsetWidth;
+	var packWidth = cardArray.length*30+75;
+	var PackStartOffset=(papaWidth-packWidth)/2;	
+	var newHtml='';
+	for (var i=0;i<cardArray.length;i++) {				
+			cardArray[i].elementId='card' + i ;
+			cardArray[i].cardCode= escape(JSON.stringify(cardArray[i]));
+			cardArray[i].cardPainting=cardArray[i].number + " " + cardArray[i].suit;		
+			cardArray[i].leftSprite=trueLeftSprite(cardArray[i].counter);												//sprite calculations
+			cardArray[i].topSprite=((cardArray[i].counter-1)%4)*-98;											//sprite calculations
+			cardArray[i].leftPos=PackStartOffset+i*30;
+			cardArray[i].zIndex=i+10;						
+			newHtml+=_MustachString(get('cards').getAttribute("data-myTemplate"), cardArray[i]); 		//puts the data from the player's cards array into the template div that represents his cards
+			delete cardArray[i].cardCode;		
+	}	
+	get('cards').innerHTML=newHtml	;			
+}
+
+function writeOtherCards () {								//writes the cards of the other 3 players	
+	var newHtmlTop = '';
+	var newHtmlLeft = '';
+	var newHtmlRight = '';
+	
+	for (var i=0;i<13;i++) {								//building the cards for the other 3 players 
+	
+		newHtmlTop+=_MustachString(get('topCards').getAttribute("data-myTemplate"), {elementId:'card'+i+'T',leftPos:10+i*30,zIndex:i+10});
+		newHtmlLeft+=_MustachString(get('leftPlayer').getAttribute("data-myTemplate"), {elementId:'card'+i+'L',bottomPos:20+i*30,zIndex:i+10});
+		newHtmlRight+=_MustachString(get('rightPlayer').getAttribute("data-myTemplate"), {elementId:'card'+i+'R',bottomPos:20+i*30,zIndex:i+10});
+	}
+	get('topCards').innerHTML=newHtmlTop;		
+	get('leftPlayer').innerHTML=newHtmlLeft	;			
+	get('rightPlayer').innerHTML=newHtmlRight;				
+}
+
+function updateScoreTableTricks (object,round) {			//gets an object with the tricks of all the players and updates the scoreTable accordingly
+	scoreTable[round]["tricks0"]=object["p0"];
+	scoreTable[round]["tricks1"]=object["p1"];
+	scoreTable[round]["tricks2"]=object["p2"];
+	scoreTable[round]["tricks3"]=object["p3"];
+}
+
+function updateScoreTableScores (array,round) {			//gets an object with the scores of all the players and updates the scoreTable accordingly
+	scoreTable[round]["score0"]=array[0];
+	scoreTable[round]["score1"]=array[1];
+	scoreTable[round]["score2"]=array[2];
+	scoreTable[round]["score3"]=array[3];
+}
+
+function updateBidsTable(player,card) {							//updates the bids table data acording to a bid
+	
+	if (card == "pass"){
+		bidsTable[biddingRound]["p"+player+"bidNumber"] = "Pass"
+		bidsTable[biddingRound]["p"+player+"bidSuit"] = ""
+	}
+	else {
+		bidsTable[biddingRound]["p"+player+"bidNumber"] = bidArray[card].number
+		bidsTable[biddingRound]["p"+player+"bidSuit"] = bidArray[card].suit
+	}			
+}
+
+function writeTable (array,div) {								// a generic function that writes a table in the DOM from a data array that contains objects
+	var newHTML=''	
+	for (var i=0;i<array.length;i++) {		
+		newHTML+=_MustachString(get(div).getAttribute("data-myTemplate"),array[i]);
+	}
+	get(div).innerHTML = newHTML;
+}
+
+function biddingArray () {						//creates an array of objects representing possible declarations for the bidding
+	biddingArray=[];
+	counter=0;	
+	for (var i=5;i<14;i++) {
+		for (var s=0;s<4;s++) {
+			biddingArray[counter] = {};
+			biddingArray[counter].number=i;
+			biddingArray[counter].suit=suits[s];
+			biddingArray[counter].cardIndex=counter;			
+			counter++;	
+		}	
+	}
+	return biddingArray
+}
+
+function declarationArray () {						//creates an array of objects representing possible declarations after the trump has been set
+	declarationsArray=[];	
+	for (var i=0;i<14;i++) {			
+		declarationsArray[i] = {};
+		declarationsArray[i].number=i;						
+	}
+	return declarationsArray
+}
+
+function writeBiddingBoard (array) {						//writes a bidding board according to a bidding array
+	var newHTML=''	
+	for (var i=0;i<array.length;i++) {		
+		newHTML+=_MustachString(get('biddingBoard').getAttribute("data-myTemplate"),array[i]);
+	}
+	get('biddingBoard').innerHTML = newHTML;
+}
+
+function writeDeclarationArray (array) {					//writes the board of the second declaration (where each player has to declare the number of tricks)
+	var newHTML=''	
+	for (var i=0;i<array.length;i++) {		
+		newHTML+=_MustachString(get('secondDeclaration').getAttribute("data-myTemplate"),array[i]);
+	}
+	get('secondDeclaration').innerHTML = newHTML;
+}
+
+function trueLeftSprite (counter) {					//returns the correct sprite according the index number (counter) of the card in the deck.
+													//I need this because the Ace card in my JPG is placed before the 2 card instead of after the King			
+	if(counter>48) {								//if this is an ace card			
+		return 0;
+	}
+	else {
+		return Math.floor((counter-1)/4)*(-73) -73;			//otherwise do the sprite calculation
+	}				
+}
+
+function signalTurn (playerNumber) {								//signals who's turn is it to play
+	
+	var names = document.getElementsByClassName("name");	
+	for (var i=0;i<names.length;i++) {
+		var currentName = names[i];		
+		$(currentName).removeClass("yellowColor")		
+	}
+	if (others[playerNumber] == "L") {get("leftName").className += " yellowColor"}
+	else if (others[playerNumber] == "R") {get("rightName").className += " yellowColor"}
+	else if (others[playerNumber] == "T") {get("topName").className += " yellowColor"}
+	else  {get("bottomName").className += " yellowColor"}
+}
+
+function clearSignalTurn (playerNumber) {								//signals who's turn is it to play
+	
+	var names = document.getElementsByClassName("name");	
+	for (var i=0;i<names.length;i++) {
+		var currentName = names[i];		
+		$(currentName).removeClass("yellowColor")		
+	}
+}
+
+function animate (counter,cardId, side) {					//animates the throwing of a card to the center of the table
+	
+	var card = get(cardId+""+side);							//the card thrown	
+	card.setAttribute("out","yes");
+	var numberId = parseInt(cardId.replace("card",""));		//the number of the ID, used later in the arrangeCards function	
+	if (side == "L") {
+		var leftSprite=((-392)-((counter)%4)*(-98))%392;					
+		var topSprite= -392+trueLeftSprite((counter));			
+		card.style.left="250px";
+		card.style["bottom"]="200px";					
+	}
+	else if (side == "R") {
+		var leftSprite=((-392)-((counter)%4)*(-98))%392;					
+		var topSprite= -392+trueLeftSprite((counter));					
+		card.style.left="-220px";
+		card.style["bottom"]="180px";						
+	}
+	else if  (side == "T") {	
+		var topSprite=((counter-1)%4)*-98;				
+		var leftSprite=trueLeftSprite(counter);		
+		card.style.left="200px";
+		card.style["bottom"]="-250px";					
+	}	
+	arrangeCards(numberId,side);
+	card.style.transform="rotateX(90deg)";
+	card.style["-webkit-transform"]="rotateX(90deg)"; /* Safari and Chrome */
+	cardsOfRound.push(card);
+	setTimeout((function(card,leftSprite,topSprite) {		
+		return function() {
+			card.style.background="url('http://i.imgur.com/qNCb3Sw.jpg')"+leftSprite+"px "+topSprite+"px";	
+			card.transform="rotateX(0deg)";
+			card.style["-webkit-transform"]="rotateX(0deg)"; /* Safari and Chrome */
+		}
+	})(card,leftSprite,topSprite)
+	, 500);			
+	setTimeout(function(){						//sort of fixes a bug caused by CSS transitions
+		card.style.display='none';
+		setTimeout(function(){
+			card.style.display=''
+		},50)
+	},1000)
+	
+}
+
+function arrangeCards (numberId,side) {										//closes the gap that is formed when someone throws a card
+	if (side == "T" || side=="") {var direction = "left"}					//the client's cards and the top player cards share some features and so do the two side players' cards
+	else {var direction = "bottom"}
+	for (var i=0;i<13;i++) {	
+		if (get("card"+i+side).getAttribute("out")) {continue}				//goes over each card the player still holds
+		else {			
+			var value = parseInt(get("card"+i+side).style[direction]);		//retrieves each card's left/bottom attribute		
+			if (i>numberId){												//checks if the card is before or after the card that was thrown
+				value -= 15;												//and move the card accordingly
+			}
+			else {				
+				value += 15;				
+			}
+			get("card"+i+side).style[""+direction] = value+"px";	
+		}		
+	}
+}
+
+function animateTrickWinning (card,side) {									//moves the cards to the player who wins the trick
+	console.log("the trick goes to side "+side);
+	if (side == "L" || side=="R") {var direction = "left"}					//the client's cards and the top player cards share some features and so do the two side players' cards
+	else {var direction = "bottom"}	
+	var value = parseInt(card.style[direction]);
+	if (side == "R") {
+		value += 270;
+	}
+	else if (side =="L") {
+		value -= 270;
+	}
+	else if (side =="T") {
+		value += 270;
+	}
+	else {
+		value -= 270;
+	}
+	card.style[direction] = value+"px";	
+}
+
+function getSpritesFromCounter (counter) {									//translate a card index (counter) to its locations in sprites in the cards image
+	var topSprite=((counter-1)%4)*-98;				
+	var leftSprite=trueLeftSprite(counter);		
+	return {'leftSprite':leftSprite,'topSprite':topSprite}
+}
+
+function assignSeats (myPlayer) { 			//assigns the seats (top, right ,left) to the player numbers	
+		
+	others[(myPlayer+1)%4] = "L";
+	others[(myPlayer+2)%4] = "T"
+	others[(myPlayer+3)%4] = "R"
+}
+
+
+function updatePlayerTricks (player,tricks) {				//updates and writes a player's tricks
+	if(get(others[player]+"Tricks")){
+		get(others[player]+"Tricks").innerHTML = tricks;	
+	}
+	else {
+		get('myTricks').innerHTML = tricks;
+	}	
+}
+
+function clearTricks () {	
+	get("TTricks").innerHTML = "0";	
+	get("LTricks").innerHTML = "0";	
+	get("RTricks").innerHTML = "0";	
+	get("myTricks").innerHTML = "0";
+}
+
+
+var bidArray = biddingArray();
+
+writeBiddingBoard(bidArray);
+
+writeDeclarationArray(declarationArray());
+
+socket.on('welcome', function (data) {					//when someone joins a game
+    console.log("my game is:"+data.gameId); 			
+	if(data.privateGame=="yes") {
+		get('yourGameIs').innerHTML = "your game is: "+data.gameId;
+	}
+	showElement('startPanelWaiting')
+});
+
+socket.on('gameFull', function (data) {							//when 4 players have joined a game
+    console.log("game "+data.gameId + " is now full");    
+	console.log("I am player number "+data.player);
+	console.log("the players are: "+data.names[0]+", "+data.names[1]+", "+data.names[2]+" and "+data.names[3]);
+	players.names = data.names;
+	myPlayer = data.player;
+	assignSeats(data.player);
+	setTimeout(function() {
+		writePlayerNames(data.player);
+		hideElement('startPanelWaiting');
+		showElement('TTricks');
+		showElement('RTricks');
+		showElement('LTricks');
+		showElement('myTricks');
+		showElement('chat');
+	}, 1000);
+});
+
+socket.on('newHand', function (data) {					//when a new hand actually begins (everybody pressed 'next round')
+    setTimeout(function() {				
+		bidsTable.length = 0;
+		bidsTable[0] = getEmptyBidsTableLine();	
+		biddingRound=0;	
+		waitingForBid[0].player=players.names[data.turn];
+		waitingForDec[0].player=players.names[(data.turn+1)%4];		
+		writeTable(bidsTable,'bidsTable');
+		writeTable(waitingForBid,'waitingForBid');
+		showElement("tableScoreButton");			//this is relevant just for the first hand
+		showElement("lastTrickButton");				//this is relevant just for the first hand
+		showElement("playerBids");
+		hideElement("nextRoundWaiting");
+		hideElement("mainRight");
+		showElement("playerBids");
+		cardsDiv = get('cards')
+		cardsObject = data.cards;
+		writeCards(cardsObject,cardsDiv);
+		writeOtherCards();
+		clearTricks();
+		hideElement('waitingForBid');					//this is just for the case that everyone passed and the element is showing
+		hideElement("outerBiddingBoard");				//this is just for the case that everyone passed and the element is showing
+		if(myPlayer==data.turn) {
+			console.log("your turn");
+			showElement("outerBiddingBoard");
+		}
+		else {
+			showElement("waitingForBid");
+		}
+	},1000);	
+});
+
+socket.on('playerDeclared', function (data) {				//when a declaration of a player is sent from the server
+    console.log("player "+data.player+" declared "+ data.card);
+	waitingForBid[0]["player"]=players.names[data.turn];
+	writeTable(waitingForBid,'waitingForBid');	
+	updateBidsTable(data.player,data.card);
+	writeTable(bidsTable,'bidsTable');
+	if (myPlayer == data.turn) {
+		console.log("your turn");
+		hideElement("waitingForBid");
+		showElement("outerBiddingBoard");
+	}
+	else {
+		showElement("waitingForBid");
+		hideElement("outerBiddingBoard");
+	}		
+});
+
+socket.on('finalDeclaration', function (data) {					//this is what happens after the trump has been chosen
+    console.log("the final declaration is "+ bidArray[data.card].number+bidArray[data.card].suit +" by "+data.player);				
+	hand = parseInt(data.hand);														//updating the hand on the client side
+	if (data.card == "no bid") {
+		
+	}
+	var trump=biddingArray[data.card].suit;											//decoding the card code to get the trump of the hand
+	var declaration = biddingArray[data.card].number;								//decoding the card code to get the player's second declaration
+	scoreTable[hand]=getEmptyScoreTableLine();							//creating a new line in the score table
+	scoreTable[hand].hand=data.hand+1
+	scoreTable[hand]["bet"+data.player]=declaration;					//putting the player's declaration in the score table
+	scoreTable[hand].trump=trump;										//putting the hand's trump in the score table	
+	writeTable(scoreTable,'scoreTable');		
+	waitingForDec[0]["player"]=players.names[data.turn];								//updating the waintingForDec
+	writeTable(waitingForDec,'waitingForDec');		
+	hideElement("playerBids");
+	showElement("mainRight");			
+	if (myPlayer == data.turn) {
+		console.log("your turn");
+		showElement("secondDec");	
+	}
+	else {
+		showElement("waitingForDec");
+	}
+	if (myPlayer == data.player) {				//I know which element to hide (which one is on the screen) by knowing if this player is the one to win the bidding
+		hideElement("outerBiddingBoard");		
+	}
+	else {
+		hideElement("waitingForBid");
+	}
+	
+});
+
+socket.on('restartHand', function (data) {		//if no one wants to declare
+	showElement('allPassed')
+	setTimeout(function() {
+		hideElement("allPassed")
+	},2000);
+
+});
+
+socket.on('bidNotValid', function (data) {
+    alert("The highest bid is: "+bidArray[data.lastBid].number+bidArray[data.lastBid].suit+". Beat it or pass it");
+});
+
+socket.on('secondDec', function (data) {								//when a player declares his tricks
+    console.log("player "+data.player+" declared "+data.declaration);		
+	scoreTable[hand]["bet"+(data.player)]=data.declaration;
+	waitingForDec[0]["player"]=players.names[data.turn];							//updating the waintingForDec
+	writeTable(scoreTable,'scoreTable');	
+	writeTable(waitingForDec,"waitingForDec");		
+	if (myPlayer == data.turn) {
+		console.log("your turn");
+		hideElement('waitingForDec');
+		showElement('secondDec');		
+	}
+	else {
+		showElement('waitingForDec');
+		hideElement('secondDec');	
+	}
+	if(data.lastDec == "yes") {							//if the player is the last to declare
+		setTimeout(function () {
+			hideElement('mainRight')
+		},2000);			
+		hideElement("secondDec");		
+		hideElement("waitingForDec");		
+	}
+});
+
+
+socket.on('not13', function (data) {
+    alert("can't add up to 13. you know it..");	
+});
+
+
+socket.on('cardApprovel', function (data) {			//this socket is only for when the client's card is approved (rather than a card another player threw)
+
+	var card = get(data.card.elementId);	
+	var cardId = card.id;		
+	var numberId = cardId.replace("card","");		//leaving just the number os I can use it for the arrangeCards function	
+	var numberId = parseInt(numberId);				
+	card.style.left='210px';
+	card.style.bottom='220px';
+	cardsOfRound.push(card);	
+	cardsOfRoundObj.push(data.card);
+	card.setAttribute('out','yes');
+	arrangeCards(numberId,"");									//moving the cards to fill the gap of the thrown card		
+	signalTurn(data.turn);
+});
+
+socket.on('thrownCard', function (data) {										//this is socket is when a player other than the client throws a card
+	console.log("player "+data.player+" threw this card: "+data.card.suit+" "+ data.card.number);	
+	animate(data.card.counter,data.card.elementId,others[data.player]);	
+	cardsOfRoundObj.push(data.card);
+	signalTurn(data.turn);
+	if (myPlayer == data.turn) {
+		console.log("your turn");
+	}
+});
+
+socket.on('endOfRound', function (data) {								//after the 4th card is thrown on a scpecific round
+	console.log("player "+data.winner+" won the trick and now has "+data.tricks+" tricks");	
+	setTimeout(function() {		
+		updatePlayerTricks(data.winner,data.tricks);							
+	},2000);
+	for (var i=0;i<4;i++){
+		cardsOfRoundObj[i].leftSprite = getSpritesFromCounter(cardsOfRoundObj[i].counter).leftSprite
+		cardsOfRoundObj[i].topSprite = getSpritesFromCounter(cardsOfRoundObj[i].counter).topSprite
+	}
+	writeTable(cardsOfRoundObj,'lastTrick');
+	cardsOfRoundObj.length=0;	
+	signalTurn(data.winner);
+	for (var i=0;i<4;i++) {		
+		(function (a) {
+			setTimeout(function() {		
+				animateTrickWinning(cardsOfRound[a],others[data.winner]);							
+			},1500);			
+			setTimeout(function() {
+				$(cardsOfRound[a]).addClass("nonDisplay");									
+			},2000);			
+			setTimeout(function() {
+				cardsOfRound.length=0;			
+			},2100);				
+		})(i);			
+	}
+});
+
+socket.on('handScores', function (data) {			//when the round is done, the score table is updated	
+	
+	updateScoreTableTricks(data.handTricks,hand);
+	updateScoreTableScores(data.score,hand);
+	writeTable(scoreTable,'scoreTable');		
+	setTimeout(function() {showElement('mainRight')},2500);
+	console.log(data.hand);
+	if (data.hand != 2) {
+		setTimeout(function() {showElement('nextRound')},2500);	
+	}		
+	clearSignalTurn();
+});
+
+socket.on('someoneSays', function (data) {					//when someone sends a message on the chat
+	console.log(data.player+": "+data.text);	
+	textObject = data;
+	textObject.player = players.names[textObject.player];
+	var newHTML = _MustachString(get('chatLine').getAttribute('data-myTemplate'),textObject);
+	var newLine = document.createElement("div");
+	newLine.innerHTML = newHTML;
+	console.log(newLine);
+	get('chatWindow').appendChild(newLine);
+	
+});
+
+
+
+
+document.addEventListener("click",function(e) {
+	if(e.target.getAttribute("startButton")=="public"){														
+			if(nameInputCheck == "ok") {
+			socket.emit('createGame',{type:'public',name:get('nameInput').value});
+			hideElement('startPanel');	
+			myName=get('nameInput').value;
+			} else {alert("please enter you name before joining a game")}
+			
+	}	
+	if(e.target.getAttribute("startButton")=="startPrivate"){														
+			if(nameInputCheck == "ok") {
+				socket.emit('createGame',{type:'startPrivate',name:get('nameInput').value});
+				hideElement('startPanel');
+				myName=get('nameInput').value;				
+			} else {alert("please enter you name before joining a game")}
+	}	
+	if(e.target.getAttribute("startButton")=="joinPrivate"){														
+			if(nameInputCheck == "ok") {
+				var gameCode = get("gameCode").value;
+				console.log(gameCode);
+				socket.emit('createGame',{type:'joinPrivate',gameCode:gameCode,name:get('nameInput').value});
+				hideElement('startPanel');	
+				myName=get('nameInput').value;				
+			} else {alert("please enter you name before joining a game")}	
+	}	
+	if(e.target.getAttribute("data-cardCode")){															//if this is a card
+			socket.emit('sentCard',JSON.parse(unescape(e.target.getAttribute("data-cardCode"))));			
+	}
+	if(e.target.getAttribute("declareButton")){															//if this is a declareButton
+			socket.emit('declaration',{"declaration":e.target.getAttribute("declareButton")});									
+	}
+	if(e.target.getAttribute("secondDeclareButton")){													//if this is the button of the second declaration
+			socket.emit('secondDeclaration',{"declaration":e.target.getAttribute("secondDeclareButton")});												
+	}
+	if(e.target.getAttribute("id")=="lastTrickButton") {		
+		var string = get("lastTrick").className;		
+		if(string.search("display") > -1) {			
+			hideElement("lastTrick");			
+		}
+		else {
+			showElement("lastTrick");
+		}
+	}	
+	if(e.target.getAttribute("id")=="tableScoreButton") {		
+		var string = get("mainRight").className;		
+		if(string.search("display") > -1) {			
+			hideElement("mainRight");			
+		}
+		else {
+			showElement("mainRight");
+		}
+	}	
+	if(e.target.getAttribute("id")=="nextRound") {		
+		socket.emit('nextRound',{});
+		hideElement("nextRound");
+		showElement('nextRoundWaiting');
+	}
+	if(e.target.getAttribute("id")=="nameInput") {		
+		nameInputCheck = "ok"
+		get('nameInput').value = "";
+	}
+	if(e.target.getAttribute("id")=="chatBar") {				
+		var string = get("chatBody").className;		
+		if(string.search("display") > -1) {			
+			hideElement("chatBody");
+			get("chatBar").style.bottom="-360px";	
+		}
+		else {
+			showElement("chatBody");
+			get("chatBar").style.bottom="0px";	
+		};		
+	}
+		
+}, false);	
+
+document.addEventListener("keyup",function(e) {
+	if(e.keyCode==13 && e.target.getAttribute("id")=="myChatText") {				
+		socket.emit('chatText',{text:(get('myChatText').value)});
+		get('myChatText').value = "";
+	}
+}, false);
+
+</script>
+</html>
