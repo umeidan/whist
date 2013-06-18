@@ -1,1 +1,20 @@
-this is the readme file for my whist application
+Whist Application
+
+Description: This is the Israeli version of the Whist card game. The game is currently hosted at Nodejitsu on this url - 
+www.whist.nodejitsu.com
+There is a link to the rules of the game in the application itself. The game is designed for 4 people exactly. They can (and should..) play from different computers. If you want to see how it works you can open 4 tabs as well and mimic a game of 4 people. 
+It is best seen on a high resolution of at least 1280X960 but can be played on lower resolution as well.
+
+Types of Games: When entering the game there are 3 options presented:
+1. Join public game - choose this option if you want to join other people from around the world who look for people to play with.
+2. Start private game - choose this option if you want to play with three specific people who are ready to play at that time as well. You will recieve a game number which you should pass to your friends who will have to enter the same game.
+3. Join private game - choose this if you want to play with three specific people and one of them has already started a private game and gave you that game number.
+
+The data of the games is currently not saved in a database so you can't refresh the page while playing (you will not be able to return to the game nor will somebody else be able to take your place in the game).
+
+Enjoy!
+
+
+
+
+
