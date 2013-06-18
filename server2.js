@@ -116,8 +116,7 @@ io.sockets.on('connection', function (socket) { 			//assigning the users into ga
 			if (player == games[gameIndex].turn && games[gameIndex].gameStatus == "bidding") {																	//is this the player's turn to play?
 				if (parseInt(data.declaration)>decRound[10] || data.declaration=="pass") {							//the bid is valid only if it's higher than the last one or the player passes						
 					if ( isLastBidder(decRound,player)==1 && decRound[10]== -1 && data.declaration=="pass" ) {		//if all players have passed and this is the first round and this player passes too
-						endBidding(gameIndex);					
-						//sendAll('finalDeclaration',gameIndex,{"card":"no bid","player":player});
+						endBidding(gameIndex);											
 						sendAll('restartHand',gameIndex,{"hand":games[gameIndex].hand});
 						setTimeout(function(){
 							var cards = dealCards();
@@ -282,14 +281,6 @@ io.sockets.on('connection', function (socket) { 			//assigning the users into ga
 	});
 	
 });
-
-
-function addHashToKey (object) {							//adds # to each key name in order to prevent problems later
-	for (key in object ){
-		object["#"+key]=object[key];
-		delete object[key];			
-	}	
-}
 
 function sendAll(eventname,gameIndex,data){										//send all the players of the games an event
 	for (var i=0;i<games[gameIndex].players.length;i++){					

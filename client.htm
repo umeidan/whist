@@ -23,6 +23,7 @@
 		background-color:white;		
 		transition-property: bottom,left;
 		transition-duration: 1s, 1s;		
+		cursor:pointer;
 	}
 	.rules {
 		position:absolute;
@@ -41,6 +42,7 @@
 		font-size:0.8em;
 		padding: .5em .5em 1em .5em ;
 		text-align:center;
+		cursor:pointer;
 	}
 	.lastTrick {
 		position:absolute;		
@@ -95,7 +97,7 @@
 		height:98px;						
 		float:left;
 		bottom:0px;		
-		background-color:white;				
+		background-color:white;					
 	}
 	#leftName {
 		margin:250px 5px 200px 5px;	
@@ -128,14 +130,14 @@
 		width:98px;		
 		height:73px;										
 		background-color:white;		
-		left:0px;		
+		left:0px;				
 	}
 	.rightPlayerCard {
 		position:absolute;
 		width:98px;		
 		height:73px;												
 		background-color:white;		
-		left:0px;		
+		left:0px;				
 	}
 	.myTricks{
 		margin: 5px 0px 0px 5px;
@@ -206,6 +208,7 @@
 		-webkit-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
 		-moz-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
 		box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
+		cursor:pointer;
 	}	
 	.nextRound {
 		position:absolute;
@@ -404,6 +407,7 @@
 		background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0) ));
 		-webkit-box-shadow: inset rgba(255,254,255,0.6) 0 0.3em .3em, inset rgba(0,0,0,0.15) 0 -0.1em .3em, /* inner shadow */ hsl(0, 0%, 60%) 0 .1em 3px, hsl(0, 0%, 45%) 0 .3em 1px, /* color border */ rgba(0,0,0,0.2) 0 .5em 5px;
 		color:white;
+		cursor:pointer;
 	}
 	.myName {
 		position:relative;		
@@ -472,6 +476,10 @@
 	.yellowColor {
 		color:yellow;
 	}	
+	.blue {
+		color:navy;
+		border-color:black;
+	}
 
 	
 </style>
@@ -586,22 +594,22 @@
 					<div  class="scoreTableCell">
 						<div class="scoreTableMiniCell">{{bet0}}</div>
 						<div class="scoreTableMiniCell">{{tricks0}}</div>
-						<div class="scoreTableMiniCell">{{score0}}</div>
+						<div class="scoreTableMiniCell blue">{{score0}}</div>
 					</div>
 					<div  class="scoreTableCell">
 						<div class="scoreTableMiniCell">{{bet1}}</div>
 						<div class="scoreTableMiniCell">{{tricks1}}</div>
-						<div class="scoreTableMiniCell">{{score1}}</div>
+						<div class="scoreTableMiniCell blue">{{score1}}</div>
 					</div>
 					<div  class="scoreTableCell">
 						<div class="scoreTableMiniCell">{{bet2}}</div>
 						<div class="scoreTableMiniCell">{{tricks2}}</div>
-						<div class="scoreTableMiniCell">{{score2}}</div>
+						<div class="scoreTableMiniCell blue">{{score2}}</div>
 					</div>
 					<div  class="scoreTableCell">
 						<div class="scoreTableMiniCell">{{bet3}}</div>
 						<div class="scoreTableMiniCell">{{tricks3}}</div>
-						<div class="scoreTableMiniCell">{{score3}}</div>
+						<div class="scoreTableMiniCell blue">{{score3}}</div>
 					</div>
 					<div class="trumpCell">{{trump}}</div>				
 				</div>
@@ -637,6 +645,9 @@
 </body>
 
 <script>
+
+console.log("script loaded");
+
 var nameInputCheck  = ""		//checks if a player put his name where he supposed to before trying to join a game
 var hand = 0;					//the hand in the game
 var cardsObject = [];			//an object that contains all the cards in the deck
@@ -885,16 +896,17 @@ function trueLeftSprite (counter) {					//returns the correct sprite according t
 }
 
 function signalTurn (playerNumber) {								//signals who's turn is it to play
-	
-	var names = document.getElementsByClassName("name");	
-	for (var i=0;i<names.length;i++) {
-		var currentName = names[i];		
-		$(currentName).removeClass("yellowColor")		
-	}
-	if (others[playerNumber] == "L") {get("leftName").className += " yellowColor"}
-	else if (others[playerNumber] == "R") {get("rightName").className += " yellowColor"}
-	else if (others[playerNumber] == "T") {get("topName").className += " yellowColor"}
-	else  {get("bottomName").className += " yellowColor"}
+	setTimeout(function () {
+		var names = document.getElementsByClassName("name");	
+		for (var i=0;i<names.length;i++) {
+			var currentName = names[i];		
+			$(currentName).removeClass("yellowColor")		
+		}
+		if (others[playerNumber] == "L") {get("leftName").className += " yellowColor"}
+		else if (others[playerNumber] == "R") {get("rightName").className += " yellowColor"}
+		else if (others[playerNumber] == "T") {get("topName").className += " yellowColor"}
+		else  {get("bottomName").className += " yellowColor"}
+	}, 1000);
 }
 
 function clearSignalTurn (playerNumber) {								//signals who's turn is it to play
